@@ -84,6 +84,30 @@ dont_bother_goals := clean clobber dataclean installclean \
 ifneq ($(filter $(dont_bother_goals), $(MAKECMDGOALS)),)
 dont_bother := true
 endif
+ifeq ($(MAKECMDGOALS),magic)
+dont_bother := true
+endif
+ifeq ($(MAKECMDGOALS),dirty)
+dont_bother := true
+endif
+ifeq ($(MAKECMDGOALS),appclean)
+dont_bother := true
+endif
+ifeq ($(MAKECMDGOALS),imgclean)
+dont_bother := true
+endif
+ifeq ($(MAKECMDGOALS),kernelclean)
+dont_bother := true
+endif
+ifeq ($(MAKECMDGOALS),systemclean)
+dont_bother := true
+endif
+ifeq ($(MAKECMDGOALS),recoveryclean)
+dont_bother := true
+endif
+ifeq ($(MAKECMDGOALS),rootclean)
+dont_bother := true
+endif
 
 # Targets that provide quick help on the build system.
 include $(BUILD_SYSTEM)/help.mk
@@ -151,7 +175,7 @@ javac_version_str := $(shell unset _JAVA_OPTIONS JAVA_TOOL_OPTIONS && javac -ver
 ifeq ($(LEGACY_USE_JAVA6),)
 required_version := "1.7.x"
 required_javac_version := "1.7"
-java_version := $(shell echo '$(java_version_str)' | grep '^java .*[ "]1\.7[\. "$$]')
+java_version := $(shell echo '$(java_version_str)' | grep 'java .*[ "]1\.7[\. "$$]')
 javac_version := $(shell echo '$(javac_version_str)' | grep '[ "]1\.7[\. "$$]')
 else # if LEGACY_USE_JAVA6
 required_version := "1.6.x"
@@ -358,7 +382,7 @@ ifneq (,$(user_variant))
 
 else # !user_variant
   # Turn on checkjni for non-user builds.
-  ADDITIONAL_BUILD_PROPERTIES += ro.kernel.android.checkjni=1
+  #ADDITIONAL_BUILD_PROPERTIES += ro.kernel.android.checkjni=1
   # Set device insecure for non-user builds.
   ADDITIONAL_DEFAULT_PROPERTIES += ro.secure=0
   # Allow mock locations by default for non user builds
@@ -1062,7 +1086,60 @@ clean:
 .PHONY: clobber
 clobber: clean
 
+# Clears out all apks
+.PHONY: appclean
+appclean:
+	@rm -rf $(OUT_DIR)/target/product/*/system/app
+	@rm -rf $(OUT_DIR)/target/product/*/system/priv-app
+	@echo -e ${CL_GRN}"All apks erased"${CL_RST}
+
+# Clears out all .img files
+.PHONY: imgclean
+imgclean:
+	@rm -rf $(OUT_DIR)/target/product/*/*.img
+	@echo -e ${CL_GRN}"All .img files erased"${CL_RST}
+
+# Clears out all kernel stuff
+.PHONY: kernelclean
+kernelclean:
+	@rm -rf $(OUT_DIR)/target/product/*/kernel
+	@rm -rf $(OUT_DIR)/target/product/*/boot.img
+	@echo -e ${CL_GRN}"All kernel compnents erased"${CL_RST}
+
+# Clears out all system stuff
+.PHONY: systemclean
+systemclean:
+	@rm -rf $(OUT_DIR)/target/product/*/system/
+	@rm -rf $(OUT_DIR)/target/product/*/system.img
+	@echo -e ${CL_GRN}"System components erased"${CL_RST}
+
+# Clears out all recovery stuff
+.PHONY: recoveryclean
+recoveryclean:
+	@rm -rf $(OUT_DIR)/target/product/*/recovery/
+	@rm -rf $(OUT_DIR)/target/product/*/recovery.img
+	@echo -e ${CL_GRN}"All recovery components erased"${CL_RST}
+
+# Clears out all root stuff
+.PHONY: rootclean
+rootclean:
+	@rm -rf $(OUT_DIR)/target/product/*/root/
+	@echo -e ${CL_GRN}"All root components erased"${CL_RST}
+
 # The rules for dataclean and installclean are defined in cleanbuild.mk.
+
+.PHONY: magic
+magic:
+	@rm -rf $(OUT_DIR)/target/product/*
+	@echo -e ${CL_GRN}"Target/Product directory removed."${CL_RST}
+
+# Clears out zip and build.prop
+.PHONY: dirty
+dirty:
+	@rm -rf $(OUT_DIR)/target/product/*/system/build.prop
+	@rm -rf $(OUT_DIR)/target/product/*/*.zip
+	@rm -rf $(OUT_DIR)/target/product/*/*.md5sum
+	@echo -e ${CL_GRN}"build.prop and zip files erased"${CL_RST}
 
 #xxx scrape this from ALL_MODULE_NAME_TAGS
 .PHONY: modules
